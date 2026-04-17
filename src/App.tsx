@@ -7,11 +7,14 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ExerciseDetail from "./pages/ExerciseDetail";
 import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./pages/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminMembers from "./pages/AdminMembers";
 import AdminContent from "./pages/AdminContent";
+import AdminExerciseItems from "./pages/AdminExerciseItems";
+import AdminMessages from "./pages/AdminMessages";
 import AdminNotifications from "./pages/AdminNotifications";
 
 const queryClient = new QueryClient();
@@ -32,11 +35,21 @@ const App = () => (
                 </LanguageProvider>
               }
             />
+            <Route
+              path="/exercises/:id"
+              element={
+                <LanguageProvider>
+                  <ExerciseDetail />
+                </LanguageProvider>
+              }
+            />
             <Route path="/admin" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="members" element={<AdminMembers />} />
               <Route path="content" element={<AdminContent />} />
+              <Route path="exercises" element={<AdminExerciseItems />} />
+              <Route path="messages" element={<AdminMessages />} />
               <Route path="notifications" element={<AdminNotifications />} />
             </Route>
             <Route path="*" element={<NotFound />} />

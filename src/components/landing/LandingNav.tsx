@@ -25,6 +25,9 @@ export const LandingNav = () => {
           <a href="#payment" className="text-sm text-accent-foreground/80 hover:text-primary transition-colors hidden sm:block">
             {t("الدفع", "Payment")}
           </a>
+          <a href="#contact" className="text-sm text-accent-foreground/80 hover:text-primary transition-colors hidden sm:block">
+            {t("تواصل", "Contact")}
+          </a>
           <LanguageSwitcher />
           <Link to="/admin" className="text-xs text-muted-foreground hover:text-primary transition-colors">
             {t("لوحة التحكم", "Admin")}

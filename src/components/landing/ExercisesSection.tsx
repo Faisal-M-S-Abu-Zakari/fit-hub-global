@@ -2,10 +2,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dumbbell } from "lucide-react";
+import { Dumbbell, ArrowRight, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const ExercisesSection = () => {
-  const { lang, t } = useLanguage();
+  const { lang, t, dir } = useLanguage();
+  const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
   const { data: exercises } = useQuery({
     queryKey: ["content", "exercise"],
@@ -33,25 +35,31 @@ export const ExercisesSection = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {exercises && exercises.length > 0 ? (
             exercises.map((item) => (
-              <Card key={item.id} className="overflow-hidden group hover:shadow-lg transition-shadow border-border/50">
-                {item.image_url && (
-                  <div className="h-48 overflow-hidden">
-                    <img
-                      src={item.image_url}
-                      alt={lang === "ar" ? item.title_ar : item.title_en}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                )}
-                <CardContent className="p-5">
-                  <h3 className="font-bold text-lg mb-2">
-                    {lang === "ar" ? item.title_ar : item.title_en}
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    {lang === "ar" ? item.description_ar : item.description_en}
-                  </p>
-                </CardContent>
-              </Card>
+              <Link key={item.id} to={`/exercises/${item.id}`} className="group">
+                <Card className="overflow-hidden hover:shadow-lg transition-shadow border-border/50 h-full">
+                  {item.image_url && (
+                    <div className="h-48 overflow-hidden">
+                      <img
+                        src={item.image_url}
+                        alt={lang === "ar" ? item.title_ar : item.title_en}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+                  <CardContent className="p-5">
+                    <h3 className="font-bold text-lg mb-2">
+                      {lang === "ar" ? item.title_ar : item.title_en}
+                    </h3>
+                    <p className="text-muted-foreground text-sm mb-3">
+                      {lang === "ar" ? item.description_ar : item.description_en}
+                    </p>
+                    <span className="inline-flex items-center gap-1 text-primary text-sm font-medium group-hover:gap-2 transition-all">
+                      {t("عرض التمارين", "View exercises")}
+                      <Arrow className="h-4 w-4" />
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
             ))
           ) : (
             <div className="col-span-full text-center py-12 text-muted-foreground">

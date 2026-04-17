@@ -4,6 +4,7 @@ import { ExercisesSection } from "@/components/landing/ExercisesSection";
 import { TipsSection } from "@/components/landing/TipsSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { PaymentSection } from "@/components/landing/PaymentSection";
+import { ContactSection } from "@/components/landing/ContactSection";
 import { Footer } from "@/components/landing/Footer";
 
 const Index = () => {
@@ -15,6 +16,7 @@ const Index = () => {
       <TipsSection />
       <PricingSection />
       <PaymentSection />
+      <ContactSection />
       <Footer />
     </div>
   );
