@@ -28,7 +28,7 @@ export const ContactSection = () => {
     if (!parsed.success) {
       toast({
         title: t("بيانات غير صحيحة", "Invalid input"),
-        description: parsed.error.errors[0].message,
+        description: parsed.error.issues[0].message,
         variant: "destructive",
       });
       return;
