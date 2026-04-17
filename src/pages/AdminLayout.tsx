@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
-import { Loader2, Users, FileText, Bell, LogOut, Dumbbell, LayoutDashboard } from "lucide-react";
+import { Loader2, Users, FileText, Bell, LogOut, Dumbbell, LayoutDashboard, ListChecks, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +38,19 @@ const AdminLayout = () => {
     enabled: !!user && isAdmin,
   });
 
+  const { data: unreadMessages } = useQuery({
+    queryKey: ["unread-messages"],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("contact_messages")
+        .select("*", { count: "exact", head: true })
+        .eq("is_read", false);
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!user && isAdmin,
+  });
+
   const notificationCount = (expiringMembers?.length || 0) + (pendingPayments?.length || 0);
 
   if (loading) {
@@ -56,6 +69,8 @@ const AdminLayout = () => {
     { path: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/admin/members", icon: Users, label: "Members" },
     { path: "/admin/content", icon: FileText, label: "Content" },
+    { path: "/admin/exercises", icon: ListChecks, label: "Exercises" },
+    { path: "/admin/messages", icon: MessageSquare, label: "Messages", badge: unreadMessages },
     { path: "/admin/notifications", icon: Bell, label: "Notifications", badge: notificationCount },
   ];
 
