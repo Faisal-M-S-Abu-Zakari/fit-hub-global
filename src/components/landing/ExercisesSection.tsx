@@ -1,5 +1,6 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
+import { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dumbbell, ArrowRight, ArrowLeft } from "lucide-react";
@@ -9,7 +10,7 @@ export const ExercisesSection = () => {
   const { lang, t, dir } = useLanguage();
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
-  const { data: exercises } = useQuery({
+  const { data: exercises, isError, error } = useQuery({
     queryKey: ["content", "exercise"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -32,6 +33,11 @@ export const ExercisesSection = () => {
         <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
           {t("برامج تدريبية متنوعة تناسب جميع المستويات", "Diverse training programs for all fitness levels")}
         </p>
+        {isError ? (
+          <div className="text-center py-8 text-destructive text-sm">
+            {(error as PostgrestError).message}
+          </div>
+        ) : null}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {exercises && exercises.length > 0 ? (
             exercises.map((item) => (

@@ -1,5 +1,6 @@
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
+import { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Lightbulb } from "lucide-react";
@@ -7,7 +8,7 @@ import { Lightbulb } from "lucide-react";
 export const TipsSection = () => {
   const { lang, t } = useLanguage();
 
-  const { data: tips } = useQuery({
+  const { data: tips, isError, error } = useQuery({
     queryKey: ["content", "tip"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -30,6 +31,11 @@ export const TipsSection = () => {
         <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
           {t("نصائح من خبرائنا لتحقيق أفضل النتائج", "Expert tips to achieve the best results")}
         </p>
+        {isError ? (
+          <div className="text-center py-8 text-destructive text-sm">
+            {(error as PostgrestError).message}
+          </div>
+        ) : null}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {tips && tips.length > 0 ? (
             tips.map((item) => (

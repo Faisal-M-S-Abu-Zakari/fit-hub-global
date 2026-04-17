@@ -103,4 +103,10 @@
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, hsl(var(--gym-orange)) 0%, hsl(var(--gym-orange-light)) 100%);
   }
+  .soft-3d-card {
+    transform-style: preserve-3d;
+    box-shadow:
+      0 4px 10px hsl(var(--gym-dark) / 0.08),
+      0 12px 28px hsl(var(--gym-dark) / 0.08);
+  }
 }
