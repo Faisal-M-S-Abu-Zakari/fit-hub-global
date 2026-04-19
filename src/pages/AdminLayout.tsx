@@ -62,7 +62,7 @@ const AdminLayout = () => {
   }
 
   if (!user || !isAdmin) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/admin/login" replace />;
   }
 
   const navItems = [

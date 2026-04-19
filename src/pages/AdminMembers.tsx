@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -19,6 +20,8 @@ interface MemberForm {
   end_date: string;
   payment_status: string;
   notes: string;
+  /** Optional Supabase auth.users id to link the member portal */
+  auth_user_id: string;
 }
 
 const emptyForm: MemberForm = {
@@ -29,7 +32,10 @@ const emptyForm: MemberForm = {
   end_date: "",
   payment_status: "pending",
   notes: "",
+  auth_user_id: "",
 };
+
+type MemberRow = Database["public"]["Tables"]["members"]["Row"];
 
 const AdminMembers = () => {
   const [open, setOpen] = useState(false);
@@ -49,11 +55,22 @@ const AdminMembers = () => {
 
   const saveMutation = useMutation({
     mutationFn: async (data: MemberForm) => {
+      const authUserId = data.auth_user_id.trim() === "" ? null : data.auth_user_id.trim();
+      const payload = {
+        name: data.name,
+        phone: data.phone,
+        subscription_type: data.subscription_type,
+        start_date: data.start_date,
+        end_date: data.end_date,
+        payment_status: data.payment_status,
+        notes: data.notes || null,
+        auth_user_id: authUserId,
+      };
       if (editId) {
-        const { error } = await supabase.from("members").update(data).eq("id", editId);
+        const { error } = await supabase.from("members").update(payload).eq("id", editId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("members").insert(data);
+        const { error } = await supabase.from("members").insert(payload);
         if (error) throw error;
       }
     },
@@ -64,7 +81,12 @@ const AdminMembers = () => {
       setForm(emptyForm);
       toast({ title: editId ? "Member updated" : "Member added" });
     },
-    onError: (e: any) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e: unknown) =>
+      toast({
+        title: "Error",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      }),
   });
 
   const deleteMutation = useMutation({
@@ -78,7 +100,7 @@ const AdminMembers = () => {
     },
   });
 
-  const openEdit = (member: any) => {
+  const openEdit = (member: MemberRow) => {
     setEditId(member.id);
     setForm({
       name: member.name,
@@ -88,6 +110,7 @@ const AdminMembers = () => {
       end_date: member.end_date,
       payment_status: member.payment_status,
       notes: member.notes || "",
+      auth_user_id: member.auth_user_id ?? "",
     });
     setOpen(true);
   };
@@ -138,6 +161,15 @@ const AdminMembers = () => {
                 </SelectContent>
               </Select>
               <Input placeholder="Notes (optional)" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+              <div>
+                <label className="text-xs text-muted-foreground block mb-1">Linked member account (UUID, optional)</label>
+                <Input
+                  placeholder="auth.users id for member portal"
+                  value={form.auth_user_id}
+                  onChange={(e) => setForm({ ...form, auth_user_id: e.target.value })}
+                  className="font-mono text-xs"
+                />
+              </div>
               <Button type="submit" className="w-full gradient-orange text-primary-foreground" disabled={saveMutation.isPending}>
                 {saveMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {editId ? "Update" : "Add"}

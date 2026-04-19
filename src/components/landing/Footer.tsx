@@ -1,4 +1,5 @@
 import { useLanguage } from "@/contexts/LanguageContext";
+import { Link } from "react-router-dom";
 import { Dumbbell, Mail, Phone } from "lucide-react";
 
 export const Footer = () => {
@@ -30,6 +31,9 @@ export const Footer = () => {
               <a href="#tips" className="block text-muted-foreground hover:text-primary transition-colors">{t("النصائح", "Tips")}</a>
               <a href="#payment" className="block text-muted-foreground hover:text-primary transition-colors">{t("الاشتراك", "Membership")}</a>
               <a href="#contact" className="block text-muted-foreground hover:text-primary transition-colors">{t("تواصل معنا", "Contact")}</a>
+              <Link to="/member" className="block text-muted-foreground hover:text-primary transition-colors">
+                {t("منطقة العضو", "Member area")}
+              </Link>
             </div>
           </div>
 

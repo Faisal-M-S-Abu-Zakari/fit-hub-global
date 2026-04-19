@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dumbbell, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminLogin = () => {
-  const { user, isAdmin, loading, signIn } = useAuth();
+  const { user, isAdmin, loading, signIn, signOut } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -31,10 +32,10 @@ const AdminLogin = () => {
     setSubmitting(true);
     try {
       await signIn(email, password);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Login failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unknown error",
         variant: "destructive",
       });
     }
@@ -51,6 +52,22 @@ const AdminLogin = () => {
           <CardTitle className="text-accent-foreground text-2xl">Admin Login</CardTitle>
         </CardHeader>
         <CardContent>
+          {user && !isAdmin ? (
+            <Alert variant="destructive" className="mb-4 border-destructive/50 bg-destructive/10">
+              <AlertTitle>Access denied</AlertTitle>
+              <AlertDescription className="space-y-3">
+                <p>This account does not have admin access.</p>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Button type="button" variant="secondary" size="sm" onClick={() => signOut()}>
+                    Sign out
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" asChild>
+                    <Link to="/member">Member area</Link>
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          ) : null}
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               type="email"

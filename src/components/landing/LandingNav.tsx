@@ -15,7 +15,7 @@ export const LandingNav = () => {
             {t("فيتنس جيم", "Fitness Gym")}
           </span>
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-end gap-2 sm:gap-4 flex-wrap">
           <a href="#exercises" className="text-sm text-accent-foreground/80 hover:text-primary transition-colors hidden sm:block">
             {t("التمارين", "Exercises")}
           </a>
@@ -29,7 +29,10 @@ export const LandingNav = () => {
             {t("تواصل", "Contact")}
           </a>
           <LanguageSwitcher />
-          <Link to="/admin" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+          <Link to="/member" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+            {t("منطقة العضو", "Member")}
+          </Link>
+          <Link to="/admin/login" className="text-xs text-muted-foreground hover:text-primary transition-colors">
             {t("لوحة التحكم", "Admin")}
           </Link>
         </div>

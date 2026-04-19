@@ -1,6 +1,18 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
 type Language = "ar" | "en";
+
+const STORAGE_KEY = "fit-hub-lang";
+
+function readStoredLang(): Language {
+  try {
+    const v = localStorage.getItem(STORAGE_KEY);
+    if (v === "en" || v === "ar") return v;
+  } catch {
+    /* ignore */
+  }
+  return "ar";
+}
 
 interface LanguageContextType {
   lang: Language;
@@ -12,9 +24,23 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLang] = useState<Language>("ar");
+  const [lang, setLangState] = useState<Language>(readStoredLang);
   const dir = lang === "ar" ? "rtl" : "ltr";
   const t = (ar: string, en: string) => (lang === "ar" ? ar : en);
+
+  const setLang = useCallback((next: Language) => {
+    setLangState(next);
+    try {
+      localStorage.setItem(STORAGE_KEY, next);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = lang === "ar" ? "ar" : "en";
+    document.documentElement.dir = dir;
+  }, [lang, dir]);
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t, dir }}>

@@ -1,7 +1,9 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { Footer } from "@/components/landing/Footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +14,13 @@ const ExerciseDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { lang, t, dir } = useLanguage();
 
-  const { data: program, isLoading: loadingProgram } = useQuery({
+  const {
+    data: program,
+    isLoading: loadingProgram,
+    isError: programQueryError,
+    error: programError,
+    refetch: refetchProgram,
+  } = useQuery({
     queryKey: ["program", id],
     queryFn: async () => {
       const { data, error } = await supabase.from("content").select("*").eq("id", id!).maybeSingle();
@@ -22,7 +30,13 @@ const ExerciseDetail = () => {
     enabled: !!id,
   });
 
-  const { data: items, isLoading: loadingItems } = useQuery({
+  const {
+    data: items,
+    isLoading: loadingItems,
+    isError: itemsQueryError,
+    error: itemsError,
+    refetch: refetchItems,
+  } = useQuery({
     queryKey: ["exercise-items", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -33,15 +47,38 @@ const ExerciseDetail = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!id,
+    enabled: !!id && !!program,
   });
 
   const Arrow = dir === "rtl" ? ArrowRight : ArrowLeft;
+
+  const fallbackTitle = t("برنامج تدريبي | فيتنس جيم", "Training program | Fitness Gym");
+  const fallbackDesc = t("تفاصيل البرنامج والتمارين.", "Program details and exercises.");
+  const programLabel = program ? (lang === "ar" ? program.title_ar : program.title_en) : fallbackTitle;
+  const programDesc =
+    program != null
+      ? (lang === "ar" ? program.description_ar : program.description_en) || fallbackDesc
+      : fallbackDesc;
+  useDocumentMeta(`${programLabel} | ${t("فيتنس جيم", "Fitness Gym")}`, programDesc ?? undefined);
 
   if (loadingProgram) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (programQueryError) {
+    return (
+      <div className="min-h-screen">
+        <LandingNav />
+        <div className="container px-4 py-20 text-center space-y-4">
+          <p className="text-destructive text-sm">{(programError as PostgrestError).message}</p>
+          <Button type="button" variant="outline" onClick={() => refetchProgram()}>
+            {t("إعادة المحاولة", "Try again")}
+          </Button>
+        </div>
       </div>
     );
   }
@@ -102,6 +139,14 @@ const ExerciseDetail = () => {
           <h2 className="text-2xl md:text-3xl font-bold mb-8">
             {t("تفاصيل التمارين", "Exercise Breakdown")}
           </h2>
+          {itemsQueryError ? (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 mb-6 text-center text-sm space-y-3">
+              <p className="text-destructive">{(itemsError as PostgrestError).message}</p>
+              <Button type="button" variant="outline" size="sm" onClick={() => refetchItems()}>
+                {t("إعادة المحاولة", "Try again")}
+              </Button>
+            </div>
+          ) : null}
           {loadingItems ? (
             <div className="text-center py-12">
               <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
