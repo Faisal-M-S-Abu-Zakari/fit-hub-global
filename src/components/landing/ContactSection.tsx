@@ -127,7 +127,7 @@ export const ContactSection = () => {
         <div className="gap-4 grid grid-cols-1 md:grid-cols-3 mt-8">
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <Mail className="w-4 h-4 text-primary" />
-            <span className="text-sm">RockGYM@gmail.com</span>
+            <span className="text-sm">fitnes-Gym@gmail.com</span>
           </div>
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <Phone className="w-4 h-4 text-primary" />

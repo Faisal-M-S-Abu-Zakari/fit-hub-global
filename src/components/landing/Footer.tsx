@@ -40,7 +40,7 @@ export const Footer = () => {
           <div>
             <h4 className="mb-3 font-semibold">{t("تواصل وسوشيال", "Contact & Social")}</h4>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <p className="flex items-center justify-center md:justify-start gap-2"><Mail className="w-4 h-4 text-primary" /> RockGYM@gmail.com</p>
+              <p className="flex items-center justify-center md:justify-start gap-2"><Mail className="w-4 h-4 text-primary" />fitnes-Gym@gmail.com</p>
               <p className="flex items-center justify-center md:justify-start gap-2"><Phone className="w-4 h-4 text-primary" /> +970 59 000 0000</p>
             </div>
             <div className="flex items-center justify-center md:justify-start gap-3 mt-4">

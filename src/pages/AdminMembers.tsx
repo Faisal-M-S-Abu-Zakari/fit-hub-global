@@ -9,8 +9,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2, KeyRound, CheckCircle2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, KeyRound, CheckCircle2, User, Phone, Check, CreditCard, ChevronRight, Share, Copy } from "lucide-react";
 import { format } from "date-fns";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface MemberForm {
   name: string;
@@ -283,69 +285,117 @@ const AdminMembers = () => {
       </Dialog>
 
       {isLoading ? (
-        <div className="text-center py-12"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>
-      ) : (
-        <div className="bg-card rounded-lg border overflow-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Subscription</TableHead>
-                <TableHead>Start</TableHead>
-                <TableHead>End</TableHead>
-                <TableHead>Payment</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {members?.map((m) => (
-                <TableRow key={m.id}>
-                  <TableCell className="font-medium">{m.name}</TableCell>
-                  <TableCell>{m.phone}</TableCell>
-                  <TableCell className="capitalize">{m.subscription_type}</TableCell>
-                  <TableCell>{m.start_date}</TableCell>
-                  <TableCell>{m.end_date}</TableCell>
-                  <TableCell>
-                    <Badge variant={m.payment_status === "paid" ? "default" : "destructive"} className={m.payment_status === "paid" ? "bg-green-600" : ""}>
-                      {m.payment_status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {m.auth_user_id ? (
-                      <Badge variant="outline" className="gap-1">
-                        <CheckCircle2 className="h-3 w-3 text-green-600" /> Linked
-                      </Badge>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openCreateAccount(m)}
-                        className="h-7 text-xs"
-                      >
-                        <KeyRound className="h-3 w-3 mr-1" /> Create login
-                      </Button>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right space-x-1">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(m)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(m.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {(!members || members.length === 0) && (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No members yet</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+        <div className="text-center py-20 bg-background/50 rounded-lg flex flex-col items-center justify-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground animate-pulse">Loading members...</p>
         </div>
+      ) : (
+        <Card className="border-sidebar-border bg-sidebar-accent overflow-hidden shadow-lg">
+          <CardHeader className="bg-white/5 pb-4 border-b border-sidebar-border">
+            <CardTitle className="text-white">Member Directory</CardTitle>
+            <CardDescription className="text-slate-300">Manage your gym members, subscriptions, and accounts.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="bg-white/5">
+                  <TableRow className="hover:bg-transparent border-sidebar-border">
+                    <TableHead className="w-[250px] text-start text-white font-semibold">Member</TableHead>
+                    <TableHead className="text-start text-white font-semibold">Contact</TableHead>
+                    <TableHead className="text-start text-white font-semibold">Plan Details</TableHead>
+                    <TableHead className="text-start text-white font-semibold">Payment</TableHead>
+                    <TableHead className="text-start text-white font-semibold">Portal Access</TableHead>
+                    <TableHead className="text-end text-white font-semibold px-4">Manage</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {members?.map((m) => (
+                    <TableRow key={m.id} className="group hover:bg-background/40 border-sidebar-border transition-colors">
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10 border border-primary/20 bg-primary/5">
+                            <AvatarFallback className="bg-transparent text-primary font-semibold">
+                              {m.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="font-medium text-white group-hover:text-primary transition-colors">
+                            {m.name}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center text-sm text-slate-300 gap-2">
+                          <Phone className="h-3.5 w-3.5" />
+                          {m.phone}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium capitalize text-sm text-white">{m.subscription_type}</span>
+                          <span className="text-xs text-slate-400">
+                            {format(new Date(m.start_date), "MMM d, yyyy")} - {format(new Date(m.end_date), "MMM d, yyyy")}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={m.payment_status === "paid" ? "default" : "destructive"} 
+                          className={m.payment_status === "paid" ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm" : "bg-orange-600 text-white hover:bg-orange-700 shadow-sm"}
+                        >
+                          <CreditCard className="h-3 w-3 mr-1" />
+                          {m.payment_status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {m.auth_user_id ? (
+                          <div className="flex items-center text-xs text-emerald-600 font-medium gap-1.5">
+                            <CheckCircle2 className="h-4 w-4" /> 
+                            <span>Linked</span>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => openCreateAccount(m)}
+                            className="h-8 text-xs bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
+                          >
+                            <KeyRound className="h-3.5 w-3.5 mr-1.5" /> Create login
+                          </Button>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-end px-4">
+                        <div className="flex justify-end gap-2 opacity-100 sm:opacity-50 sm:group-hover:opacity-100 transition-opacity">
+                          <Button variant="ghost" size="icon" onClick={() => openEdit(m)} className="text-slate-300 hover:text-white hover:bg-white/10">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => deleteMutation.mutate(m.id)} className="text-slate-300 hover:text-destructive hover:bg-destructive/10">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {(!members || members.length === 0) && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-64 text-center">
+                        <div className="flex flex-col items-center justify-center text-muted-foreground gap-3">
+                          <div className="h-16 w-16 bg-sidebar-border rounded-full flex items-center justify-center mb-2 shadow-inner">
+                            <User className="h-8 w-8 opacity-50" />
+                          </div>
+                          <p className="text-lg font-medium text-foreground">No members yet</p>
+                          <p className="text-sm max-w-sm text-center">Get started by adding your first gym member. You can track their subscription and payment status here.</p>
+                          <Button onClick={() => setOpen(true)} variant="outline" className="mt-4">
+                            <Plus className="h-4 w-4 mr-2" /> Add Your First Member
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

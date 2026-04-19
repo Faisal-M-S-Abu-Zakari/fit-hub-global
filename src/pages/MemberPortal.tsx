@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { PostgrestError } from "@supabase/supabase-js";
-import { Dumbbell, Loader2 } from "lucide-react";
+import { Dumbbell, Loader2, QrCode, Calendar, Activity, ChevronRight, Share, MapPin, User as UserIcon } from "lucide-react";
 import { differenceInDays, parseISO } from "date-fns";
 
 const MemberPortal = () => {
@@ -59,6 +59,13 @@ const MemberPortal = () => {
       });
     }
     setSubmitting(false);
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t("صباح الخير", "Good morning");
+    if (hour < 18) return t("مساء الخير", "Good afternoon");
+    return t("مساء الخير", "Good evening");
   };
 
   const title = t("منطقة العضو", "Member area");
@@ -152,59 +159,115 @@ const MemberPortal = () => {
             </CardContent>
           </Card>
         ) : (
-          <Card className="bg-card/80 border-border/50">
-            <CardHeader>
-              <CardTitle className="text-xl">{member.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex justify-between gap-2">
-                <span className="text-muted-foreground">{t("الهاتف", "Phone")}</span>
-                <span className="font-medium">{member.phone}</span>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="h-16 w-16 bg-primary/20 rounded-full flex items-center justify-center border-2 border-primary/50 text-primary overflow-hidden">
+                <UserIcon className="h-8 w-8" />
               </div>
-              <div className="flex justify-between gap-2">
-                <span className="text-muted-foreground">{t("نوع الاشتراك", "Plan")}</span>
-                <span className="font-medium capitalize">{member.subscription_type}</span>
+              <div>
+                <p className="text-sm text-muted-foreground">{getGreeting()},</p>
+                <h2 className="text-2xl font-bold">{member.name}</h2>
               </div>
-              <div className="flex justify-between gap-2">
-                <span className="text-muted-foreground">{t("من", "Start")}</span>
-                <span>{member.start_date}</span>
+            </div>
+
+            {/* Virtual Membership Card */}
+            <Card className="bg-gradient-to-br from-primary/80 to-orange-600/80 border-none text-white shadow-xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-20">
+                <Dumbbell className="h-24 w-24" />
               </div>
-              <div className="flex justify-between gap-2">
-                <span className="text-muted-foreground">{t("حتى", "End")}</span>
-                <span>{member.end_date}</span>
-              </div>
-              {daysLeft !== null ? (
-                <p className="text-muted-foreground pt-2 border-t border-border/50">
-                  {daysLeft < 0
-                    ? t("انتهى الاشتراك", "Subscription ended")
-                    : t(`متبقي ${daysLeft} يوم`, `${daysLeft} day(s) left`)}
-                </p>
-              ) : null}
-              <div className="flex justify-between items-center gap-2 pt-2">
-                <span className="text-muted-foreground">{t("الدفع", "Payment")}</span>
-                <Badge variant={member.payment_status === "paid" ? "default" : "destructive"}>
-                  {lang === "ar" && member.payment_status === "paid"
-                    ? "مدفوع"
-                    : lang === "ar" && member.payment_status === "pending"
-                      ? "معلق"
-                      : member.payment_status}
-                </Badge>
-              </div>
-              {member.notes ? (
-                <p className="text-muted-foreground pt-2 border-t border-border/50 text-xs">{member.notes}</p>
-              ) : null}
-              <div className="flex flex-col gap-2 pt-4">
-                {isAdmin ? (
-                  <Button asChild variant="outline" className="w-full">
-                    <Link to="/admin/dashboard">{t("لوحة التحكم", "Admin dashboard")}</Link>
-                  </Button>
+              <CardContent className="p-6 relative z-10 flex gap-4 items-center">
+                <div className="bg-white/95 p-3 rounded-lg flex-shrink-0 animate-pulse-slow">
+                  <QrCode className="h-20 w-20 text-black" />
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-white/70 text-xs font-semibold tracking-wider uppercase">{t("بطاقة العضوية", "MEMBERSHIP CARD")}</p>
+                    <p className="font-mono text-lg font-bold tracking-widest">{member.id.substring(0, 8).toUpperCase()}</p>
+                  </div>
+                  <Badge variant="outline" className="bg-white/20 text-white border-white/30 capitalize">
+                    {member.subscription_type} Plan
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Card className="bg-card/80 border-border/50 hover:bg-card transition-colors cursor-pointer group">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2">
+                  <div className="h-10 w-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Calendar className="h-5 w-5" />
+                  </div>
+                  <p className="font-medium text-sm">{t("الجدول", "Schedule")}</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-card/80 border-border/50 hover:bg-card transition-colors cursor-pointer group">
+                <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2">
+                  <div className="h-10 w-10 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Activity className="h-5 w-5" />
+                  </div>
+                  <p className="font-medium text-sm">{t("التمارين", "Workouts")}</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="bg-card/80 border-border/50">
+              <CardHeader className="pb-3 border-b border-border/50">
+                <CardTitle className="text-lg">{t("تفاصيل الاشتراك", "Subscription Details")}</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4 space-y-4 text-sm">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-muted-foreground block text-xs">{t("من", "Valid from")}</span>
+                    <span className="font-medium">{member.start_date}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground block text-xs">{t("حتى", "Valid until")}</span>
+                    <span className="font-medium">{member.end_date}</span>
+                  </div>
+                </div>
+                
+                {daysLeft !== null ? (
+                  <div>
+                    <span className="text-muted-foreground block text-xs mb-1">{t("الحالة", "Status")}</span>
+                    {daysLeft < 0 ? (
+                      <Badge variant="destructive">{t("انتهى الاشتراك", "Subscription ended")}</Badge>
+                    ) : (
+                      <Badge className="bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm">{t(`متبقي ${daysLeft} يوم`, `${daysLeft} day(s) left`)}</Badge>
+                    )}
+                  </div>
                 ) : null}
-                <Button type="button" variant="ghost" className="w-full" onClick={() => signOut()}>
-                  {t("تسجيل الخروج", "Sign out")}
+
+                <div className="flex justify-between items-center gap-2 pt-4 border-t border-border/50">
+                  <span className="text-muted-foreground">{t("حالة الدفع", "Payment Status")}</span>
+                  <Badge variant={member.payment_status === "paid" ? "default" : "destructive"}>
+                    {lang === "ar" && member.payment_status === "paid"
+                      ? "مدفوع"
+                      : lang === "ar" && member.payment_status === "pending"
+                        ? "معلق"
+                        : member.payment_status}
+                  </Badge>
+                </div>
+
+                {member.notes ? (
+                  <div className="pt-4 border-t border-border/50">
+                    <span className="text-muted-foreground block text-xs mb-1">{t("ملاحظات", "Notes")}</span>
+                    <p className="text-xs">{member.notes}</p>
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+
+            <div className="flex flex-col gap-3 pt-6 border-t border-border/50">
+              {isAdmin ? (
+                <Button asChild variant="outline" className="w-full">
+                  <Link to="/admin/dashboard">{t("لوحة التحكم", "Admin dashboard")}</Link>
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+              ) : null}
+              <Button type="button" variant="ghost" className="w-full text-muted-foreground hover:text-foreground" onClick={() => signOut()}>
+                {t("تسجيل الخروج", "Sign out")}
+              </Button>
+            </div>
+          </div>
         )}
       </main>
       <Footer />

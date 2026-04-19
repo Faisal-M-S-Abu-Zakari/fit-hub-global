@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Dumbbell, Loader2 } from "lucide-react";
+import { Dumbbell, Loader2, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const AdminLogin = () => {
@@ -43,8 +43,15 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-accent p-4">
-      <Card className="w-full max-w-md bg-sidebar-accent border-sidebar-border">
+    <div className="min-h-screen flex items-center justify-center bg-accent p-4 relative">
+      <Button variant="ghost" className="absolute top-4 left-4 md:top-8 md:left-8 text-white " asChild>
+        <Link to="/">
+          <Home className="h-4 w-4 mr-2 text-primary" />
+          Back to Home
+        </Link>
+      </Button>
+
+      <Card className="w-full max-w-md bg-sidebar-accent border-sidebar-border shadow-xl">
         <CardHeader className="text-center">
           <div className="mx-auto w-14 h-14 rounded-full gradient-orange flex items-center justify-center mb-4">
             <Dumbbell className="h-7 w-7 text-primary-foreground" />

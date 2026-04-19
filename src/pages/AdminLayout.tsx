@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate, Outlet, Link, useLocation } from "react-router-dom";
+import { Navigate, Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { Loader2, Users, FileText, Bell, LogOut, Dumbbell, LayoutDashboard, ListChecks, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 const AdminLayout = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const { data: expiringMembers } = useQuery({
     queryKey: ["expiring-members"],
@@ -109,7 +110,10 @@ const AdminLayout = () => {
           <Button
             variant="ghost"
             className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
-            onClick={signOut}
+            onClick={async () => {
+              await signOut();
+              navigate("/");
+            }}
           >
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out
