@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, KeyRound, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 
 interface MemberForm {
@@ -41,6 +41,9 @@ const AdminMembers = () => {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<MemberForm>(emptyForm);
+  const [accountMember, setAccountMember] = useState<MemberRow | null>(null);
+  const [accountEmail, setAccountEmail] = useState("");
+  const [accountPassword, setAccountPassword] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -100,6 +103,45 @@ const AdminMembers = () => {
     },
   });
 
+  const createAccountMutation = useMutation({
+    mutationFn: async (vars: { member_id: string; email: string; password: string }) => {
+      const { data, error } = await supabase.functions.invoke("create-member-account", {
+        body: vars,
+      });
+      if (error) {
+        // Try to surface the function's JSON error message
+        const ctx = (error as unknown as { context?: { json?: () => Promise<{ error?: string }> } }).context;
+        if (ctx?.json) {
+          try {
+            const j = await ctx.json();
+            if (j?.error) throw new Error(j.error);
+          } catch (parseErr) {
+            if (parseErr instanceof Error && parseErr.message) throw parseErr;
+          }
+        }
+        throw error;
+      }
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      setAccountMember(null);
+      setAccountEmail("");
+      setAccountPassword("");
+      toast({
+        title: "Account created",
+        description: "Share the email and password with the member to sign in at /member.",
+      });
+    },
+    onError: (e: unknown) =>
+      toast({
+        title: "Could not create account",
+        description: e instanceof Error ? e.message : "Unknown error",
+        variant: "destructive",
+      }),
+  });
+
   const openEdit = (member: MemberRow) => {
     setEditId(member.id);
     setForm({
@@ -113,6 +155,12 @@ const AdminMembers = () => {
       auth_user_id: member.auth_user_id ?? "",
     });
     setOpen(true);
+  };
+
+  const openCreateAccount = (member: MemberRow) => {
+    setAccountMember(member);
+    setAccountEmail("");
+    setAccountPassword("");
   };
 
   return (
@@ -179,6 +227,61 @@ const AdminMembers = () => {
         </Dialog>
       </div>
 
+      {/* Create account dialog */}
+      <Dialog open={!!accountMember} onOpenChange={(v) => { if (!v) setAccountMember(null); }}>
+        <DialogContent className="bg-card">
+          <DialogHeader>
+            <DialogTitle>Create login for {accountMember?.name}</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!accountMember) return;
+              createAccountMutation.mutate({
+                member_id: accountMember.id,
+                email: accountEmail.trim(),
+                password: accountPassword,
+              });
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Email</label>
+              <Input
+                type="email"
+                value={accountEmail}
+                onChange={(e) => setAccountEmail(e.target.value)}
+                placeholder="member@example.com"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground block mb-1">Password (6+ chars)</label>
+              <Input
+                type="text"
+                value={accountPassword}
+                onChange={(e) => setAccountPassword(e.target.value)}
+                placeholder="Set an initial password"
+                minLength={6}
+                maxLength={128}
+                required
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Share these credentials with the member. They sign in at <code>/member</code>.
+              </p>
+            </div>
+            <Button
+              type="submit"
+              className="w-full gradient-orange text-primary-foreground"
+              disabled={createAccountMutation.isPending}
+            >
+              {createAccountMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Create account
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {isLoading ? (
         <div className="text-center py-12"><Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" /></div>
       ) : (
@@ -192,6 +295,7 @@ const AdminMembers = () => {
                 <TableHead>Start</TableHead>
                 <TableHead>End</TableHead>
                 <TableHead>Payment</TableHead>
+                <TableHead>Account</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -208,6 +312,22 @@ const AdminMembers = () => {
                       {m.payment_status}
                     </Badge>
                   </TableCell>
+                  <TableCell>
+                    {m.auth_user_id ? (
+                      <Badge variant="outline" className="gap-1">
+                        <CheckCircle2 className="h-3 w-3 text-green-600" /> Linked
+                      </Badge>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openCreateAccount(m)}
+                        className="h-7 text-xs"
+                      >
+                        <KeyRound className="h-3 w-3 mr-1" /> Create login
+                      </Button>
+                    )}
+                  </TableCell>
                   <TableCell className="text-right space-x-1">
                     <Button variant="ghost" size="icon" onClick={() => openEdit(m)}>
                       <Pencil className="h-4 w-4" />
@@ -220,7 +340,7 @@ const AdminMembers = () => {
               ))}
               {(!members || members.length === 0) && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No members yet</TableCell>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No members yet</TableCell>
                 </TableRow>
               )}
             </TableBody>
